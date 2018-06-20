@@ -8,7 +8,7 @@ You then start the application using loop.run_until_complete(app.MainLoop()).
 
 Below is a simple example:
 
-```
+```python
 import wx
 from wxasync import AsyncBind, WxAsyncApp
 import asyncio
