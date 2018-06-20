@@ -1,14 +1,3 @@
-# wxasync
-asyncio support for wxpython
-
-This library defines two things: WxAsyncApp, and AsyncBind. 
-Just create a WxAsyncApp instead of a wx.App, and use AsyncBind when you want
-to bind an event to a coroutine. 
-You then start the application using loop.run_until_complete(app.MainLoop()).
-
-Below is a simple example:
-
-```
 import wx
 from wxasync import AsyncBind, WxAsyncApp
 import asyncio
@@ -42,4 +31,3 @@ frame.Show()
 app.SetTopWindow(frame)
 loop = get_event_loop()
 loop.run_until_complete(app.MainLoop())
-```
