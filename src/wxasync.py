@@ -31,7 +31,7 @@ class WxAsyncApp(wx.App):
             while not self.exiting:
                 if IS_MAC:
                     # evtloop.Pending() just returns True on MacOs
-                    evtloop.Dispatch()
+                    evtloop.DispatchTimeout(0)
                 else:
                     while evtloop.Pending():
                         evtloop.Dispatch()
