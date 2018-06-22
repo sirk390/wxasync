@@ -7,24 +7,19 @@ from collections import defaultdict
 import platform
 
 
-GlobalWxAsyncApp = None
 
-
-IS_MAC = platform.system() == "Darwin"  
-
+IS_MAC = platform.system() == "Darwin"
 
 class WxAsyncApp(wx.App):
     def __init__(self, warn_on_cancel_callback=False, loop=None):
-        global GlobalWxAsyncApp
         super(WxAsyncApp, self).__init__()
         self.loop = loop or get_event_loop()
-        GlobalWxAsyncApp = self
         self.BoundObjects = {}
         self.RunningTasks = defaultdict(set)
         self.SetExitOnFrameDelete(True)
         self.exiting = False
         self.warn_on_cancel_callback = warn_on_cancel_callback
-        
+
     async def MainLoop(self):
         evtloop = wx.GUIEventLoop()
         with wx.EventLoopActivator(evtloop):
@@ -37,7 +32,7 @@ class WxAsyncApp(wx.App):
                         evtloop.Dispatch()
                 await asyncio.sleep(0.005)
                 evtloop.ProcessIdle()
-                
+
     def ExitMainLoop(self):
         self.exiting = True
 
@@ -47,37 +42,39 @@ class WxAsyncApp(wx.App):
             object.Bind(wx.EVT_WINDOW_DESTROY, lambda event: self.OnDestroy(event, object))
         self.BoundObjects[object][event_binder.typeId] = async_callback
         object.Bind(event_binder, lambda event: self.OnEvent(event, object, event_binder.typeId))
-        
+
     def OnEvent(self, event, obj, type):
         asyncallback = self.BoundObjects[obj][type]
         event_task = self.loop.create_task(asyncallback(event.Clone()))
         event_task.add_done_callback(self.OnEventCompleted)
         event_task.obj = obj
         self.RunningTasks[obj].add(event_task)
-    
+
     def OnEventCompleted(self, event_task):
         try:
             # This gathers completed callbacks (otherwise asyncio will show a warning)
             # Note: exceptions from callbacks raise here
             # we just let them bubble as there is nothing we can do at this point
-            _res = event_task.result() 
+            _res = event_task.result()
         except CancelledError:
+            # Cancelled because the window was destroyed, this is normal so ignore it
             pass
         self.RunningTasks[event_task.obj].remove(event_task)
-    
+
     def OnDestroy(self, event, obj):
         # Cancel async callbacks
         for task in self.RunningTasks[obj]:
-            task.cancel()
-            if self.warn_on_cancel_callback:
-                warnings.warn("cancelling callback" + str(obj) + str(task))
-        del self.RunningTasks[obj]
+            if not task.done():
+                task.cancel()
+                if self.warn_on_cancel_callback:
+                    warnings.warn("cancelling callback" + str(obj) + str(task))
         del self.BoundObjects[obj]
 
 
 def AsyncBind(event, async_callback, obj):
-    if GlobalWxAsyncApp is None:
+    app = wx.App.Get()
+    if type(app) is not WxAsyncApp:
         raise Exception("Create a 'WxAsyncApp' first")
-    GlobalWxAsyncApp.AsyncBind(event, async_callback, obj)
-    
-    
+    app.AsyncBind(event, async_callback, obj)
+
+
