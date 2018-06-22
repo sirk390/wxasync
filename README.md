@@ -51,12 +51,12 @@ This gives pretty good results
 
 Below is view of the performances (on windows Core I7-7700K 4.2Ghz):
 
-| Scenario      |Latency in ms |  Latency in ms (at max throuput)| Throughput(msg/s) |
+| Scenario      |Latency  |  Latency (max throughput)| Throughput(msg/s) |
 | ------------- |--------------|---------------------------------|-------------|
-| asyncio only(for reference)  |0             |17                               |571 325|
-| wx only(for reference)       |0             |19                               |94 591|
-| wxasync (GUI) | 5            |19                               |52 304|
-| wxasync (GUI+asyncio)| 5 GUI / 0 asyncio |24 GUI / 12 asyncio |52 304 GUI + 134 000 asyncio|
+| asyncio only(for reference)  |0ms             |17ms                               |571 325|
+| wx only(for reference)       |0ms             |19ms                               |94 591|
+| wxasync (GUI) | 5ms            |19ms                               |52 304|
+| wxasync (GUI+asyncio)| 5ms GUI / 0ms asyncio |24ms GUI / 12ms asyncio |40 302 GUI + 134 000 asyncio|
 
 
 The performance tests are included in the 'test' directory.
