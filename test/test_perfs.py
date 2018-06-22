@@ -104,7 +104,9 @@ class WxMessageThroughputTest(wx.Frame):
 
 
 class WxAsyncAsyncIOLatencyTest(wx.Frame):
-    """ While using a WxAsyncApp, send only a few events (not enough to queue up) through the asyncio event loop and check latency """
+    """ While using a WxAsyncApp, send only a few messages as 'loop.call_later' (not enough to queue up) through the asyncio event loop and check difference between expected time, and arrived time.
+        If the GUI Dispatch blocks the asyncio event loop, you will see it here ().
+    """
     def __init__(self, parent=None, loop=None):
         super(WxAsyncAsyncIOLatencyTest, self).__init__(parent)
         self.loop = loop
@@ -130,7 +132,7 @@ class WxAsyncAsyncIOLatencyTest(wx.Frame):
 
         if self.total_events_sent != self.total_to_send:
             t = tnow + self.delay_s
-            self.loop.call_later(self.delay_s, lambda: self.aio_loop_func(t)) 
+            self.loop.call_later(self.delay_s, lambda: self.aio_loop_func(tnow+self.delay_s)) 
             self.total_events_sent += 1
             self.aio_events_pending += 1
             self.total_aio_sent += 1
@@ -138,7 +140,7 @@ class WxAsyncAsyncIOLatencyTest(wx.Frame):
     def results(self):
         avg_aio_latency_ms = (self.aio_latency_sum / self.total_aio_sent) * 1000
         return {
-                "AvgLatency(ms)": int(avg_aio_latency_ms),
+                "AvgLatency(ms)": max(int(avg_aio_latency_ms), 0),
                 "TotalSent": self.total_aio_sent,
                 "Duration": "%.2fs" % (self.duration),
                 "MsgInterval(ms)" : self.delay_ms}
@@ -316,9 +318,7 @@ class WxAsyncAppCombinedLatencyTest(wx.Frame):
             self.Destroy()
 
         if self.total_events_sent != self.total_to_send:
-            self.loop.call_later(self.delay_s, lambda : wx.PostEvent(self, TestEvent(t1=tnow+self.delay_s)))
-            # if we use 'wx.CallLater' here as below, the apparent latency is 0ms, because the wxEventLoop directly handles the wx.PostEvent after already beeing in the event loop
-            #wx.CallLater(self.delay_ms, lambda : wx.PostEvent(self, TestEvent(t1=time.time())))
+            wx.CallLater(self.delay_ms, lambda : wx.PostEvent(self, TestEvent(t1=tnow+self.delay_s)))
             self.total_events_sent += 1
             self.total_wx_sent += 1
             self.wx_events_pending += 1
@@ -334,8 +334,7 @@ class WxAsyncAppCombinedLatencyTest(wx.Frame):
             self.Destroy()
 
         if self.total_events_sent != self.total_to_send:
-            t = tnow + self.delay_s
-            self.loop.call_later(self.delay_s, lambda: self.aio_loop_func(tnow+self.delay_s)) #, *args
+            self.loop.call_later(self.delay_s, lambda: self.aio_loop_func(tnow+self.delay_s)) 
             self.total_events_sent += 1
             self.aio_events_pending += 1
             self.total_aio_sent += 1
@@ -347,9 +346,9 @@ class WxAsyncAppCombinedLatencyTest(wx.Frame):
         avg_aio_latency_ms = (self.aio_latency_sum / self.total_aio_sent) * 1000
         avg_wx_latency_ms = (self.wx_latency_sum / self.total_wx_sent) * 1000
         return {
-                "wxAvgLatency(ms)": int(avg_wx_latency_ms),
+                "wxAvgLatency(ms)": max(int(avg_wx_latency_ms), 0), # can be negative, due to "loop.call_later" calling a few ms earlier than expected
                 "wxTotalSent": self.total_wx_sent,
-                "aioAvgLatency(ms)": int(avg_aio_latency_ms),
+                "aioAvgLatency(ms)": max(int(avg_aio_latency_ms), 0), # can be negative, due to "loop.call_later" calling a few ms earlier than expected
                 "aioTotalSent": self.total_aio_sent,
                 "Duration": "%.2fs" % (self.duration),
                 "MsgInterval(ms)" : self.delay_ms}
@@ -446,29 +445,39 @@ if __name__ == '__main__':
     combined_results = {}
     combined_results["wxAsyncApp (wx.PostEvent+loop.call_soon) throughput"] = WxAsyncAppCombinedThroughputTest.run()
     combined_results["wxAsyncApp (wx.PostEvent+loop.call_soon) latency"] = WxAsyncAppCombinedLatencyTest.run()
-    print ("Combined Tests, using wx and asyncio at the same time:\n")
+    print ("\nCombined Tests, using wx and asyncio at the same time:\n")
     print (format_stat_results(combined_results))
 
 
 """
-Windows:
+Windows (Core I7-7700K 4.2Ghz):
+        
+    Individual Tests: 
+                                 AvgLatency(ms) Duration MsgInterval(ms) Throughput(msg/s) TotalSent
+    wxAsyncApp (asyncio latency)              0    9.37s             100                         100
+    wx.App (wx.PostEvent)                    11    1.13s                             88561    100000
+    asyncio (loop.call_soon)                 17    0.35s                            571325    200000
+    wxAsyncApp (wx.PostEvent)                19    1.99s                             50279    100000
     
-                              AvgLatency(ms) Duration Throughput(msg/s) TotalSent
-    axAsyncApp (wx.PostEvent)             19    1.96s             50897    100000
-    wx.App (wx.PostEvent)                 10    1.08s             92918    100000
-    asyncio (loop.call_soon)              17    0.35s            569701    200000
+    Combined Tests, using wx and asyncio at the same time:
     
                                                         Duration MsgInterval(ms) aioAvgLatency(ms) aioThroughput(msg/s) aioTotalSent wxAvgLatency(ms) wxThroughput(msg/s) wxTotalSent
-    axAsyncApp (wx.PostEvent+loop.call_soon) throughput    1.57s            none                11                85525       134000               23               42124       66000
-    axAsyncApp (wx.PostEvent+loop.call_soon) latency       1.16s              10                 0                               800                5                             200
+    wxAsyncApp (wx.PostEvent+loop.call_soon) throughput    1.79s            none                13                74763       134000               27               36823       66000
+    wxAsyncApp (wx.PostEvent+loop.call_soon) latency       1.84s              10                -7                               882                0                             118
     
-On MacOS (same order but not formatted due to issues with 'This program needs access to the screen. Please run with a Framework build of python...'):
-
-    {'Throughput(msg/s)': 47115, 'AvgLatency(ms)': 21, 'TotalSent': 100000, 'Duration': '2.12s'}
-    {'Throughput(msg/s)': 44869, 'AvgLatency(ms)': 22, 'TotalSent': 100000, 'Duration': '2.23s'}
-    {'Throughput(msg/s)': 387625, 'AvgLatency(ms)': 25, 'TotalSent': 200000, 'Duration': '0.52s'}
+On MacOS (VM of Core I7-7700K 4.2Ghz):
         
-    {'wxThroughput(msg/s)': 20451, 'wxAvgLatency(ms)': 48, 'wxTotalSent': 50000, 'aioThroughput(msg/s)': 61355, 'aioAvgLatency(ms)': 16, 'aioTotalSent': 150000, 'Duration': '2.44s', 'MsgInterval(ms)': 'none'}
-    {'wxAvgLatency(ms)': 2, 'wxTotalSent': 457, 'aioAvgLatency(ms)': 0, 'aioTotalSent': 543, 'Duration': '12.01s', 'MsgInterval(ms)': 10}
+    Individual Tests: 
+                                 AvgLatency(ms) Duration MsgInterval(ms) Throughput(msg/s) TotalSent
+    wxAsyncApp (asyncio latency)              0   10.08s             100                         100
+    wx.App (wx.PostEvent)                    16    1.62s                             61677    100000
+    asyncio (loop.call_soon)                 29    0.60s                            332176    200000
+    wxAsyncApp (wx.PostEvent)                25    2.55s                             39244    100000
+    
+    Combined Tests, using wx and asyncio at the same time:
+    
+                                                        Duration MsgInterval(ms) aioAvgLatency(ms) aioThroughput(msg/s) aioTotalSent wxAvgLatency(ms) wxThroughput(msg/s) wxTotalSent
+    wxAsyncApp (wx.PostEvent+loop.call_soon) throughput    1.69s            none                11                88970       150000               33               29656       50000
+    wxAsyncApp (wx.PostEvent+loop.call_soon) latency       6.87s              10                 0                               629                8                             371
        
 """
