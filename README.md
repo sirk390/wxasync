@@ -43,3 +43,20 @@ app.SetTopWindow(frame)
 loop = get_event_loop()
 loop.run_until_complete(app.MainLoop())
 ```
+
+## Performance
+
+wxasync does GUI message polling every 5ms, and runs the asyncio message loop the rest of the time.
+This gives pretty good results
+
+Below is view of the performances (on windows Core I7-7700K 4.2Ghz):
+
+| Scenario      |Latency in ms |  Latency in ms (at max throuput)| Throughput(msg/s) |
+| ------------- |--------------|---------------------------------|-------------|
+| asyncio only(for reference)  |0             |17                               |571 325|
+| wx only(for reference)       |0             |19                               |94 591|
+| wxasync (GUI) | 5            |19                               |52 304|
+| wxasync (GUI+asyncio)| 5 GUI / 0 asyncio |24 GUI / 12 asyncio |52 304 GUI + 134 000 asyncio|
+
+
+The performance tests are included in the 'test' directory.
