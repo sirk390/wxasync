@@ -37,29 +37,38 @@ class WxAsyncApp(wx.App):
         self.exiting = True
 
     def AsyncBind(self, event_binder, async_callback, object):
+        """Bind a coroutine to a wx Event. Note that when wx object is destroyed, any coroutine still running will be cancelled automatically.
+        """ 
         if object not in self.BoundObjects:
-            self.BoundObjects[object] = {}
+            self.BoundObjects[object] = defaultdict(list)
             object.Bind(wx.EVT_WINDOW_DESTROY, lambda event: self.OnDestroy(event, object))
-        self.BoundObjects[object][event_binder.typeId] = async_callback
+        self.BoundObjects[object][event_binder.typeId].append(async_callback)
         object.Bind(event_binder, lambda event: self.OnEvent(event, object, event_binder.typeId))
 
-    def OnEvent(self, event, obj, type):
-        asyncallback = self.BoundObjects[obj][type]
-        event_task = self.loop.create_task(asyncallback(event.Clone()))
-        event_task.add_done_callback(self.OnEventCompleted)
-        event_task.obj = obj
-        self.RunningTasks[obj].add(event_task)
+    def StartCoroutine(self, coroutine, obj):
+        """Start and attach a coroutine to a wx object. When object is destroyed, the coroutine will be cancelled automatically.
+        """ 
+        if asyncio.iscoroutinefunction(coroutine):
+            coroutine = coroutine()
+        task = self.loop.create_task(coroutine)
+        task.add_done_callback(self.OnTaskCompleted)
+        task.obj = obj
+        self.RunningTasks[obj].add(task)
 
-    def OnEventCompleted(self, event_task):
+    def OnEvent(self, event, obj, type):
+        for asyncallback in self.BoundObjects[obj][type]:
+            self.StartCoroutine(asyncallback(event.Clone()), obj)
+
+    def OnTaskCompleted(self, task):
         try:
             # This gathers completed callbacks (otherwise asyncio will show a warning)
             # Note: exceptions from callbacks raise here
             # we just let them bubble as there is nothing we can do at this point
-            _res = event_task.result()
+            _res = task.result()
         except CancelledError:
             # Cancelled because the window was destroyed, this is normal so ignore it
             pass
-        self.RunningTasks[event_task.obj].remove(event_task)
+        self.RunningTasks[task.obj].remove(task)
 
     def OnDestroy(self, event, obj):
         # Cancel async callbacks
@@ -76,5 +85,13 @@ def AsyncBind(event, async_callback, obj):
     if type(app) is not WxAsyncApp:
         raise Exception("Create a 'WxAsyncApp' first")
     app.AsyncBind(event, async_callback, obj)
+
+
+def StartCoroutine(coroutine, obj):
+    app = wx.App.Get()
+    if type(app) is not WxAsyncApp:
+        raise Exception("Create a 'WxAsyncApp' first")
+    app.StartCoroutine(coroutine, obj)
+
 
 
