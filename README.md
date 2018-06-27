@@ -3,6 +3,11 @@
 
 wxasync it a library for using python 3 asyncio (async/wait) with wxpython.
  It does GUI message polling every 5ms and runs the asyncio message loop the rest of the time.
+ 
+You can install it using: 
+```sh
+pip install wxasync
+```
 
 The library defines **WxAsyncApp**, **AsyncBind** and **StartCoroutine**.
 
