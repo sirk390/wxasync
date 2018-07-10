@@ -5,6 +5,9 @@ import warnings
 from asyncio.futures import CancelledError
 from collections import defaultdict
 import platform
+from asyncio.locks import Event
+
+from asyncio.coroutines import iscoroutinefunction
 
 
 
@@ -39,6 +42,8 @@ class WxAsyncApp(wx.App):
     def AsyncBind(self, event_binder, async_callback, object):
         """Bind a coroutine to a wx Event. Note that when wx object is destroyed, any coroutine still running will be cancelled automatically.
         """ 
+        if not iscoroutinefunction(async_callback):
+            raise Exception("async_callback is not a coroutine function")
         if object not in self.BoundObjects:
             self.BoundObjects[object] = defaultdict(list)
             object.Bind(wx.EVT_WINDOW_DESTROY, lambda event: self.OnDestroy(event, object))
@@ -94,4 +99,31 @@ def StartCoroutine(coroutine, obj):
     app.StartCoroutine(coroutine, obj)
 
 
-
+async def AsyncShowDialog(dlg):
+    closed = Event()
+    def end_dialog(return_code):
+        dlg.SetReturnCode(return_code)
+        dlg.Hide()
+        closed.set()
+    async def on_button(event):
+        # Same code as in wxwidgets:/src/common/dlgcmn.cpp:OnButton
+        # to automatically handle OK, CANCEL, APPLY,... buttons 
+        id = event.GetId()
+        if id == dlg.GetAffirmativeId():
+            if dlg.Validate() and dlg.TransferDataFromWindow():
+                end_dialog(id)
+        elif id == wx.ID_APPLY:
+            if dlg.Validate():
+                dlg.TransferDataFromWindow()
+        elif id == dlg.GetEscapeId() or (id == wx.ID_CANCEL and dlg.GetEscapeId() == wx.ID_ANY):
+            end_dialog(wx.ID_CANCEL)
+        else:
+            event.Skip()
+    async def on_close(event):
+        closed.set()
+        dlg.Hide()
+    AsyncBind(wx.EVT_CLOSE, on_close, dlg)
+    AsyncBind(wx.EVT_BUTTON, on_button, dlg)
+    dlg.Show()
+    await closed.wait()
+    return dlg.GetReturnCode()
