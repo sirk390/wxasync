@@ -15,13 +15,13 @@ IS_MAC = platform.system() == "Darwin"
 
 class WxAsyncApp(wx.App):
     def __init__(self, warn_on_cancel_callback=False, loop=None):
-        super(WxAsyncApp, self).__init__()
         self.loop = loop or get_event_loop()
         self.BoundObjects = {}
         self.RunningTasks = defaultdict(set)
-        self.SetExitOnFrameDelete(True)
         self.exiting = False
         self.warn_on_cancel_callback = warn_on_cancel_callback
+        super(WxAsyncApp, self).__init__()
+        self.SetExitOnFrameDelete(True)
 
     async def MainLoop(self):
         evtloop = wx.GUIEventLoop()
@@ -39,7 +39,7 @@ class WxAsyncApp(wx.App):
     def ExitMainLoop(self):
         self.exiting = True
 
-    def AsyncBind(self, event_binder, async_callback, object):
+    def AsyncBind(self, event_binder, async_callback, object, id=wx.ID_ANY, id2=wx.ID_ANY):
         """Bind a coroutine to a wx Event. Note that when wx object is destroyed, any coroutine still running will be cancelled automatically.
         """ 
         if not iscoroutinefunction(async_callback):
@@ -48,7 +48,7 @@ class WxAsyncApp(wx.App):
             self.BoundObjects[object] = defaultdict(list)
             object.Bind(wx.EVT_WINDOW_DESTROY, lambda event: self.OnDestroy(event, object))
         self.BoundObjects[object][event_binder.typeId].append(async_callback)
-        object.Bind(event_binder, lambda event: self.OnEvent(event, object, event_binder.typeId))
+        object.Bind(event_binder, lambda event: self.OnEvent(event, object, event_binder.typeId), id=id, id2=id2)
 
     def StartCoroutine(self, coroutine, obj):
         """Start and attach a coroutine to a wx object. When object is destroyed, the coroutine will be cancelled automatically.
@@ -85,11 +85,11 @@ class WxAsyncApp(wx.App):
         del self.BoundObjects[obj]
 
 
-def AsyncBind(event, async_callback, obj):
+def AsyncBind(event, async_callback, obj, id=wx.ID_ANY, id2=wx.ID_ANY):
     app = wx.App.Get()
-    if type(app) is not WxAsyncApp:
+    if not isinstance(app, WxAsyncApp):
         raise Exception("Create a 'WxAsyncApp' first")
-    app.AsyncBind(event, async_callback, obj)
+    app.AsyncBind(event, async_callback, obj, id=id)
 
 
 def StartCoroutine(coroutine, obj):
