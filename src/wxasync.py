@@ -89,12 +89,12 @@ def AsyncBind(event, async_callback, obj, id=wx.ID_ANY, id2=wx.ID_ANY):
     app = wx.App.Get()
     if not isinstance(app, WxAsyncApp):
         raise Exception("Create a 'WxAsyncApp' first")
-    app.AsyncBind(event, async_callback, obj, id=id)
+    app.AsyncBind(event, async_callback, obj, id=id, id2=id2)
 
 
 def StartCoroutine(coroutine, obj):
     app = wx.App.Get()
-    if type(app) is not WxAsyncApp:
+    if not isinstance(app, WxAsyncApp):
         raise Exception("Create a 'WxAsyncApp' first")
     app.StartCoroutine(coroutine, obj)
 
