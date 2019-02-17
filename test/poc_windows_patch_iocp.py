@@ -2,6 +2,8 @@
 This is a proof of concept to patch the ProactorEventLoop under windows and use
 MsgWaitForMultipleObjectsEx instead of GetQueuedCompletionStatus.
 This should improve latency and performances for GUI messages  
+
+Conclusion: It works but it is actually slower.
 """
 
 from wxasync import AsyncBind, WxAsyncApp
