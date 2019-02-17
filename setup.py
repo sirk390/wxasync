@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='wxasync',
-      version='0.2',
+      version='0.3',
       description='asyncio for wxpython',
       url='http://github.com/sirk390/wxasync',
       author='C.Bodt',
