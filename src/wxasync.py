@@ -6,7 +6,6 @@ from asyncio.futures import CancelledError
 from collections import defaultdict
 import platform
 from asyncio.locks import Event
-
 from asyncio.coroutines import iscoroutinefunction
 
 
@@ -24,6 +23,7 @@ class WxAsyncApp(wx.App):
         self.SetExitOnFrameDelete(True)
 
     async def MainLoop(self):
+        # inspired by https://github.com/wxWidgets/Phoenix/blob/master/samples/mainloop/mainloop.py
         evtloop = wx.GUIEventLoop()
         with wx.EventLoopActivator(evtloop):
             while not self.exiting:
@@ -34,6 +34,7 @@ class WxAsyncApp(wx.App):
                     while evtloop.Pending():
                         evtloop.Dispatch()
                 await asyncio.sleep(0.005)
+                self.ProcessPendingEvents()
                 evtloop.ProcessIdle()
 
     def ExitMainLoop(self):
