@@ -1,0 +1,17 @@
+1. Build
+
+>python setup.py sdist bdist_wheel
+
+2. Test
+
+>twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+
+=> test in a virtualenv. 
+   pip install wxasync==0.2  --index-url https://test.pypi.org/simple/ --no-deps
+
+3. Push to prod
+
+>twine upload  dist/*
+or 
+>twine upload --repository-url https://upload.pypi.org/legacy/ dist/*
+
