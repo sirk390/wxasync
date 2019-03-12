@@ -70,7 +70,7 @@ loop.run_until_complete(app.MainLoop())
 
 Below is view of the performances (on windows Core I7-7700K 4.2Ghz):
 
-| Scenario      |Latency  |  Latency (max throughput)| Throughput(msg/s) |
+| Scenario      |Latency  |  Latency (at max throughput)| Max Throughput(msg/s) |
 | ------------- |--------------|---------------------------------|-------------|
 | asyncio only (for reference)  |0ms             |17ms                               |571 325|
 | wx only (for reference)       |0ms             |19ms                               |94 591|
