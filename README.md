@@ -10,9 +10,7 @@ You can install it using:
 pip install wxasync
 ```
 
-The library defines **WxAsyncApp**, **AsyncBind**, **StartCoroutine**, and **AsyncShowDialog**.
-
-Just create a **WxAsyncApp** instead of a **wx.App**
+To use it, just create a **WxAsyncApp** instead of a **wx.App**
 
 ```python
 app = WxAsyncApp()
@@ -35,7 +33,6 @@ Any coroutine started using **AsyncBind** or using **StartCoroutine** is attache
 
 To show a Dialog, use **AsyncShowDialog** instead of dlg.Show(). This allows
 to use 'await' to wait until the dialog completes. Don't use ShowModal() as it would block the event loop.
-Make standard 
 
 You start the application using:
 ```python
