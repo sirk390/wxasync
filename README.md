@@ -14,10 +14,12 @@ The library defines **WxAsyncApp**, **AsyncBind**, **StartCoroutine**, and **Asy
 
 Just create a **WxAsyncApp** instead of a **wx.App**
 
-```app = WxAsyncApp()
+```python
+app = WxAsyncApp()
 ```
+
 and use **AsyncBind** to bind an event to a coroutine. 
-```
+```python
 async def async_callback():
     (...your code...)
     
@@ -36,7 +38,7 @@ to use 'await' to wait until the dialog completes. Don't use ShowModal() as it w
 Make standard 
 
 You start the application using:
-```
+```python
 loop.run_until_complete(app.MainLoop())
 ```
 
