@@ -12,16 +12,35 @@ pip install wxasync
 
 The library defines **WxAsyncApp**, **AsyncBind**, **StartCoroutine**, and **AsyncShowDialog**.
 
-Just create a **WxAsyncApp** instead of a **wx.App**, and use **AsyncBind** when you want
-to bind an event to a coroutine. You can still use wx.Bind if needed.
-For background jobs, you can use **StartCoroutine**, to start and attach coroutines to a wx object.
+Just create a **WxAsyncApp** instead of a **wx.App**
+
+```app = WxAsyncApp()
+```
+and use **AsyncBind** to bind an event to a coroutine. 
+```
+async def async_callback():
+    (...your code...)
+    
+AsyncBind(wx.EVT_BUTTON, async_callback, button1)
+```
+You can still use wx.Bind together with AsyncBind.
+
+If you don't want to wait for an event, you just use **StartCoroutine** and it will be executed immediatly. 
+```
+StartCoroutine(update_clock_coroutine, frame)
+```
+Any coroutine started using **AsyncBind** or using **StartCoroutine** is attached to a wx Window. It is automatically cancelled when the Window is destroyed. This makes it easier to use, as you don't need to take care of cancelling them yourselve. 
 
 To show a Dialog, use **AsyncShowDialog** instead of dlg.Show(). This allows
-to use 'await' to wait until the dialog completes. Don't use ShowModal() as it would block the event loop. 
+to use 'await' to wait until the dialog completes. Don't use ShowModal() as it would block the event loop.
+Make standard 
 
-You start the application using loop.run_until_complete(app.MainLoop()).
+You start the application using:
+```
+loop.run_until_complete(app.MainLoop())
+```
 
-Below is a simple example:
+Below is full example with AsyncBind, WxAsyncApp, and StartCoroutine:
 
 ```python
 import wx
