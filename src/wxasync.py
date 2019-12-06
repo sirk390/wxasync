@@ -2,7 +2,7 @@ from asyncio.events import get_event_loop
 import asyncio
 import wx
 import warnings
-from asyncio.futures import CancelledError
+from asyncio import CancelledError
 from collections import defaultdict
 import platform
 from asyncio.locks import Event
