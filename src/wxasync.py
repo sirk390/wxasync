@@ -74,8 +74,8 @@ class WxAsyncApp(wx.App):
             # Note: exceptions from callbacks raise here
             # we just let them bubble as there is nothing we can do at this point
             _res = task.result()
-        except CancelledError:
-            # Cancelled because the window was destroyed, this is normal so ignore it
+        except (CancelledError, RuntimeError):
+           # Cancelled because the window was destroyed, this is normal so ignore it
             pass
         self.RunningTasks[task.obj].remove(task)
 
