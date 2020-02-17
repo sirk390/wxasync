@@ -7,7 +7,8 @@ from collections import defaultdict
 import platform
 from asyncio.locks import Event
 from asyncio.coroutines import iscoroutinefunction
-
+from wx._html import HtmlHelpDialog
+from wx._adv import PropertySheetDialog
 
 
 IS_MAC = platform.system() == "Darwin"
@@ -106,7 +107,12 @@ def StartCoroutine(coroutine, obj):
     app.StartCoroutine(coroutine, obj)
 
 
-async def AsyncShowDialog(dlg):
+async def AsyncShowModal(dlg):
+    loop = asyncio.get_running_loop()    
+    return await loop.run_in_executor(None, dlg.ShowModal)
+        
+
+async def AsyncShow(dlg):
     closed = Event()
     def end_dialog(return_code):
         dlg.SetReturnCode(return_code)
@@ -134,3 +140,12 @@ async def AsyncShowDialog(dlg):
     dlg.Show()
     await closed.wait()
     return dlg.GetReturnCode()
+
+
+async def AsyncShowDialog(dlg):
+    if type(dlg) in [HtmlHelpDialog, wx.TextEntryDialog, wx.MultiChoiceDialog, wx.NumberEntryDialog, wx.PrintAbortDialog, 
+                     PropertySheetDialog, wx.RearrangeDialog, wx.SingleChoiceDialog]:
+        return await AsyncShow(dlg)
+    return await AsyncShowModal(dlg)
+
+
