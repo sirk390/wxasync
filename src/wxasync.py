@@ -59,6 +59,9 @@ class WxAsyncApp(wx.App):
         """ 
         if asyncio.iscoroutinefunction(coroutine):
             coroutine = coroutine()
+        if obj not in self.BoundObjects:
+            self.BoundObjects[obj] = defaultdict(list)
+            obj.Bind(wx.EVT_WINDOW_DESTROY, lambda event: self.OnDestroy(event, obj), obj)
         task = self.loop.create_task(coroutine)
         task.add_done_callback(self.OnTaskCompleted)
         task.obj = obj
