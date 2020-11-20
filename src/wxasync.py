@@ -34,6 +34,7 @@ class WxAsyncApp(wx.App):
                 else:
                     while evtloop.Pending():
                         evtloop.Dispatch()
+                        await asyncio.sleep(0)
                 await asyncio.sleep(0.005)
                 self.ProcessPendingEvents()
                 evtloop.ProcessIdle()
