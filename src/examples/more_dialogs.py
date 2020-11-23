@@ -6,7 +6,6 @@ import time
 from wx._core import TextEntryDialog, FontDialog, MessageDialog, DefaultPosition, DefaultSize
 from wx._html import HtmlHelpDialog, HF_DEFAULT_STYLE
 from wx._adv import PropertySheetDialog
-from asyncio.exceptions import CancelledError
 
 
 class TestFrame(wx.Frame):
