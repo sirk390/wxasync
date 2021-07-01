@@ -45,11 +45,11 @@ class WxAsyncApp(wx.App):
     def AsyncBind(self, event_binder, async_callback, object, source=None, id=wx.ID_ANY, id2=wx.ID_ANY):
         """Bind a coroutine to a wx Event. Note that when wx object is destroyed, any coroutine still running will be cancelled automatically.
         """ 
-        if not iscoroutinefunction(async_callback):
-            raise Exception("async_callback is not a coroutine function")
         # We restrict the object to wx.Windows to be able to cancel the coroutines on EVT_WINDOW_DESTROY, even if wx.Bind works with any wx.EvtHandler
         if not isinstance(object, wx.Window):
             raise Exception("object must be a wx.Window")
+        if not iscoroutinefunction(async_callback):
+            raise Exception("async_callback is not a coroutine function")
         if object not in self.BoundObjects:
             self.BoundObjects[object] = defaultdict(list)
             object.Bind(wx.EVT_WINDOW_DESTROY, lambda event: self.OnDestroy(event, object), object)
@@ -59,6 +59,9 @@ class WxAsyncApp(wx.App):
     def StartCoroutine(self, coroutine, obj):
         """Start and attach a coroutine to a wx object. When object is destroyed, the coroutine will be cancelled automatically.
         """ 
+        # We restrict the object to wx.Windows to be able to cancel the coroutines on EVT_WINDOW_DESTROY, even if wx.Bind works with any wx.EvtHandler
+        if not isinstance(obj, wx.Window):
+            raise Exception("obj must be a wx.Window")
         if asyncio.iscoroutinefunction(coroutine):
             coroutine = coroutine()
         if obj not in self.BoundObjects:
