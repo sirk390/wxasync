@@ -38,6 +38,7 @@ class WxAsyncApp(wx.App):
                 await asyncio.sleep(0.005)
                 self.ProcessPendingEvents()
                 evtloop.ProcessIdle()
+            self.exiting = False
 
     def ExitMainLoop(self):
         self.exiting = True
