@@ -14,13 +14,13 @@ from wx._adv import PropertySheetDialog
 IS_MAC = platform.system() == "Darwin"
 
 class WxAsyncApp(wx.App):
-    def __init__(self, warn_on_cancel_callback=False, loop=None):
+    def __init__(self, warn_on_cancel_callback=False, loop=None, **kwargs):
         self.loop = loop or get_event_loop()
         self.BoundObjects = {}
         self.RunningTasks = defaultdict(set)
         self.exiting = False
         self.warn_on_cancel_callback = warn_on_cancel_callback
-        super(WxAsyncApp, self).__init__()
+        super(WxAsyncApp, self).__init__(**kwargs)
         self.SetExitOnFrameDelete(True)
 
     async def MainLoop(self):
