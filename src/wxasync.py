@@ -112,12 +112,22 @@ def StartCoroutine(coroutine, obj):
     app.StartCoroutine(coroutine, obj)
 
 
-async def AsyncShowModal(dlg):
+#
+#  Note: os level dialogs like wx.FileDialog, wx.DirDialog, wx.FontDialog, wx.ColourDialog, wx.MessageDialog are 
+#  handled differently: 
+#    * They only support ShowModal
+#    * They must be run in an executor to avoid blocking the main event loop
+# 
+
+
+async def ShowInExecutor(dlg):
     loop = asyncio.get_running_loop()    
     return await loop.run_in_executor(None, dlg.ShowModal)
         
 
-async def AsyncShow(dlg):
+async def AsyncShowDialog(dlg):
+    if type(dlg) in [wx.FileDialog, wx.DirDialog, wx.FontDialog, wx.ColourDialog, wx.MessageDialog]:
+        raise Exception("This type of dialog cannot be shown modless, please use 'AsyncShowModal'")
     closed = Event()
     def end_dialog(return_code):
         dlg.SetReturnCode(return_code)
@@ -147,10 +157,19 @@ async def AsyncShow(dlg):
     return dlg.GetReturnCode()
 
 
-async def AsyncShowDialog(dlg):
-    if type(dlg) in [HtmlHelpDialog, wx.TextEntryDialog, wx.MultiChoiceDialog, wx.NumberEntryDialog, wx.PrintAbortDialog, 
-                     PropertySheetDialog, wx.RearrangeDialog, wx.SingleChoiceDialog]:
-        return await AsyncShow(dlg)
-    return await AsyncShowModal(dlg)
-
-
+async def AsyncShowDialogModal(dlg):
+    if type(dlg) in [HtmlHelpDialog, wx.FileDialog, wx.DirDialog, wx.FontDialog, wx.ColourDialog, wx.MessageDialog]:
+        return await ShowInExecutor(dlg)
+    else:
+        frames = set(wx.GetTopLevelWindows()) - set([dlg])
+        try:
+            for frame in frames:
+                frame.Disable()
+            return await AsyncShowDialog(dlg)
+        finally:
+            for frame in frames:
+                frame.Enable()
+            parent = dlg.GetParent()
+            if parent:
+                parent.SetFocus()
+                    

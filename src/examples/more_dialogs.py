@@ -1,5 +1,5 @@
 import wx
-from wxasync import WxAsyncApp, AsyncBind, StartCoroutine, AsyncShowDialog
+from wxasync import WxAsyncApp, AsyncBind, StartCoroutine, AsyncShowDialog, AsyncShowDialogModal
 from asyncio import get_event_loop
 import asyncio
 import time
@@ -78,9 +78,10 @@ class TestFrame(wx.Frame):
         StartCoroutine(self.update_clock, self)
 
     async def ShowDialog(self, dlg):
-        response  = await AsyncShowDialog(dlg)
+        response  = await AsyncShowDialogModal(dlg)
         NAMES = {wx.ID_OK : "ID_OK", wx.ID_CANCEL: "ID_CANCEL"}        
         print (NAMES.get(response, response))
+        return response
         
     async def update_clock(self):
         while True:
@@ -143,7 +144,7 @@ class TestFrame(wx.Frame):
                 
     async def on_TextEntryDialog(self, event):
         dlg = TextEntryDialog(self, "Please enter some text:")
-        return_code = await AsyncShowDialog(dlg)
+        return_code = await self.ShowDialog(dlg)
         print ("The ReturnCode is %s and you entered '%s'" % (return_code, dlg.GetValue()))
 
 
