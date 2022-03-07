@@ -120,14 +120,14 @@ def StartCoroutine(coroutine, obj):
 # 
 
 
-async def ShowInExecutor(dlg):
+async def ShowModalInExecutor(dlg):
     loop = asyncio.get_running_loop()    
     return await loop.run_in_executor(None, dlg.ShowModal)
         
 
 async def AsyncShowDialog(dlg):
     if type(dlg) in [wx.FileDialog, wx.DirDialog, wx.FontDialog, wx.ColourDialog, wx.MessageDialog]:
-        raise Exception("This type of dialog cannot be shown modless, please use 'AsyncShowModal'")
+        raise Exception("This type of dialog cannot be shown modless, please use 'AsyncShowDialogModal'")
     closed = Event()
     def end_dialog(return_code):
         dlg.SetReturnCode(return_code)
@@ -159,7 +159,7 @@ async def AsyncShowDialog(dlg):
 
 async def AsyncShowDialogModal(dlg):
     if type(dlg) in [HtmlHelpDialog, wx.FileDialog, wx.DirDialog, wx.FontDialog, wx.ColourDialog, wx.MessageDialog]:
-        return await ShowInExecutor(dlg)
+        return await ShowModalInExecutor(dlg)
     else:
         frames = set(wx.GetTopLevelWindows()) - set([dlg])
         try:
