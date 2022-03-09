@@ -162,13 +162,14 @@ async def AsyncShowDialogModal(dlg):
         return await ShowModalInExecutor(dlg)
     else:
         frames = set(wx.GetTopLevelWindows()) - set([dlg])
+        states = {frame: frame.IsEnabled() for frame in frames}
         try:
             for frame in frames:
                 frame.Disable()
             return await AsyncShowDialog(dlg)
         finally:
             for frame in frames:
-                frame.Enable()
+                frame.Enable(states[frame])
             parent = dlg.GetParent()
             if parent:
                 parent.SetFocus()
