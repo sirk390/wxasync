@@ -45,7 +45,7 @@ Below is full example with AsyncBind, WxAsyncApp, and StartCoroutine:
 import wx
 from wxasync import AsyncBind, WxAsyncApp, StartCoroutine
 import asyncio
-from asyncio.events import get_event_loop
+from asyncio.events import new_event_loop
 import time
 
 class TestFrame(wx.Frame):
@@ -75,12 +75,12 @@ class TestFrame(wx.Frame):
         while True:
             self.edit_timer.SetLabel(time.strftime('%H:%M:%S'))
             await asyncio.sleep(0.5)
-            
-app = WxAsyncApp()
+
+loop = new_event_loop()
+app = WxAsyncApp(loop=loop)
 frame = TestFrame()
 frame.Show()
 app.SetTopWindow(frame)
-loop = get_event_loop()
 loop.run_until_complete(app.MainLoop())
 ```
 
