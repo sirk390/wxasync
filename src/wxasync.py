@@ -7,6 +7,7 @@ from collections import defaultdict
 import platform
 from asyncio.locks import Event
 from asyncio.coroutines import iscoroutinefunction
+import asyncio
 from wx._html import HtmlHelpDialog
 from wx._adv import PropertySheetDialog
 
@@ -14,8 +15,7 @@ from wx._adv import PropertySheetDialog
 IS_MAC = platform.system() == "Darwin"
 
 class WxAsyncApp(wx.App):
-    def __init__(self, warn_on_cancel_callback=False, loop=None, **kwargs):
-        self.loop = loop or get_event_loop()
+    def __init__(self, warn_on_cancel_callback=False, **kwargs):
         self.BoundObjects = {}
         self.RunningTasks = defaultdict(set)
         self.exiting = False
@@ -68,7 +68,7 @@ class WxAsyncApp(wx.App):
         if obj not in self.BoundObjects:
             self.BoundObjects[obj] = defaultdict(list)
             obj.Bind(wx.EVT_WINDOW_DESTROY, lambda event: self.OnDestroy(event, obj), obj)
-        task = self.loop.create_task(coroutine)
+        task = asyncio.create_task(coroutine)
         task.add_done_callback(self.OnTaskCompleted)
         task.obj = obj
         self.RunningTasks[obj].add(task)

@@ -83,10 +83,13 @@ class TestFrame(wx.Frame):
         self.button.Enabled = True
 
 if __name__ == '__main__':
-    app = WxAsyncApp()
-    frame = TestFrame()
-    frame.Show()
-    app.SetTopWindow(frame)
-    loop = get_event_loop()
-    loop.run_until_complete(app.MainLoop())
-
+    
+    async def main():            
+        app = WxAsyncApp()
+        frame = TestFrame()
+        frame.Show()
+        app.SetTopWindow(frame)
+        await app.MainLoop()
+        
+    
+    asyncio.run(main())

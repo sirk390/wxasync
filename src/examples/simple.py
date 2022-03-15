@@ -4,6 +4,7 @@ import asyncio
 from asyncio.events import get_event_loop
 import time
 
+
 class TestFrame(wx.Frame):
     def __init__(self, parent=None):
         super(TestFrame, self).__init__(parent)
@@ -31,10 +32,14 @@ class TestFrame(wx.Frame):
         while True:
             self.edit_timer.SetLabel(time.strftime('%H:%M:%S'))
             await asyncio.sleep(0.5)
-            
-app = WxAsyncApp()
-frame = TestFrame()
-frame.Show()
-app.SetTopWindow(frame)
-loop = get_event_loop()
-loop.run_until_complete(app.MainLoop())
+
+
+async def main():            
+    app = WxAsyncApp()
+    frame = TestFrame()
+    frame.Show()
+    app.SetTopWindow(frame)
+    await app.MainLoop()
+    
+
+asyncio.run(main())

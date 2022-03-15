@@ -36,7 +36,7 @@ to use 'await' to wait until the dialog completes. Don't use dlg.ShowModal() dir
 
 You start the application using:
 ```python
-loop.run_until_complete(app.MainLoop())
+await app.MainLoop()
 ```
 
 Below is full example with AsyncBind, WxAsyncApp, and StartCoroutine:
@@ -47,6 +47,7 @@ from wxasync import AsyncBind, WxAsyncApp, StartCoroutine
 import asyncio
 from asyncio.events import get_event_loop
 import time
+
 
 class TestFrame(wx.Frame):
     def __init__(self, parent=None):
@@ -75,13 +76,18 @@ class TestFrame(wx.Frame):
         while True:
             self.edit_timer.SetLabel(time.strftime('%H:%M:%S'))
             await asyncio.sleep(0.5)
-            
-app = WxAsyncApp()
-frame = TestFrame()
-frame.Show()
-app.SetTopWindow(frame)
-loop = get_event_loop()
-loop.run_until_complete(app.MainLoop())
+
+
+async def main():            
+    app = WxAsyncApp()
+    frame = TestFrame()
+    frame.Show()
+    app.SetTopWindow(frame)
+    await app.MainLoop()
+
+
+asyncio.run(main())
+
 ```
 
 ## Performance
