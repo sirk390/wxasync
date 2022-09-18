@@ -55,7 +55,7 @@ class WxAsyncApp(wx.App):
             self.BoundObjects[object] = defaultdict(list)
             object.Bind(wx.EVT_WINDOW_DESTROY, lambda event: self.OnDestroy(event, object), object)
         self.BoundObjects[object][event_binder.typeId].append(async_callback)
-        object.Bind(event_binder, lambda event: self.OnEvent(event, object, event_binder.typeId), source=source, id=id, id2=id2)
+        object.Bind(event_binder, lambda event: StartCoroutine(async_callback(event.Clone()), object), source=source, id=id, id2=id2)
 
     def StartCoroutine(self, coroutine, obj):
         """Start and attach a coroutine to a wx object. When object is destroyed, the coroutine will be cancelled automatically.
@@ -72,10 +72,6 @@ class WxAsyncApp(wx.App):
         task.add_done_callback(self.OnTaskCompleted)
         task.obj = obj
         self.RunningTasks[obj].add(task)
-
-    def OnEvent(self, event, obj, type):
-        for asyncallback in self.BoundObjects[obj][type]:
-            self.StartCoroutine(asyncallback(event.Clone()), obj)
 
     def OnTaskCompleted(self, task):
         try:
