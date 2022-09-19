@@ -59,6 +59,7 @@ class WxAsyncApp(wx.App):
 
     def StartCoroutine(self, coroutine, obj):
         """Start and attach a coroutine to a wx object. When object is destroyed, the coroutine will be cancelled automatically.
+           returns an asyncio.Task
         """ 
         # We restrict the object to wx.Windows to be able to cancel the coroutines on EVT_WINDOW_DESTROY, even if wx.Bind works with any wx.EvtHandler
         if not isinstance(obj, wx.Window):
@@ -72,6 +73,7 @@ class WxAsyncApp(wx.App):
         task.add_done_callback(self.OnTaskCompleted)
         task.obj = obj
         self.RunningTasks[obj].add(task)
+        return task
 
     def OnTaskCompleted(self, task):
         try:
@@ -105,7 +107,7 @@ def StartCoroutine(coroutine, obj):
     app = wx.App.Get()
     if not isinstance(app, WxAsyncApp):
         raise Exception("Create a 'WxAsyncApp' first")
-    app.StartCoroutine(coroutine, obj)
+    return app.StartCoroutine(coroutine, obj)
 
 
 #

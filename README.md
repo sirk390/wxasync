@@ -25,9 +25,14 @@ AsyncBind(wx.EVT_BUTTON, async_callback, button1)
 ```
 You can still use wx.Bind together with AsyncBind.
 
-If you don't want to wait for an event, you just use **StartCoroutine** and it will be executed immediatly. 
+If you don't want to wait for an event, you just use **StartCoroutine** and it will be executed immediatly.
+It will return an asyncio.Task in case you need to cancel it.
 ```
-StartCoroutine(update_clock_coroutine, frame)
+task = StartCoroutine(update_clock_coroutine, frame)
+```
+If you need to stop it run:
+```
+task.cancel()
 ```
 Any coroutine started using **AsyncBind** or using **StartCoroutine** is attached to a wx Window. It is automatically cancelled when the Window is destroyed. This makes it easier to use, as you don't need to take care of cancelling them yourselve. 
 
