@@ -12,6 +12,7 @@ setup(name='wxasync',
       install_requires=[
           'wxpython',
       ],
+      python_requires=">=3.7",
       py_modules=['wxasync'],
       zip_safe=True,
 )
