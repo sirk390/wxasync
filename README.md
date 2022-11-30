@@ -37,7 +37,7 @@ If you need to stop it run:
 ```
 task.cancel()
 ```
-Any coroutine started using **AsyncBind** or using **StartCoroutine** is attached to a wx Window. It is automatically cancelled when the Window is destroyed. This makes it easier to use, as you don't need to take care of cancelling them yourselve. 
+Any coroutine started using **AsyncBind** or using **StartCoroutine** is attached to a wx.Window. It is automatically cancelled when the Window is destroyed. This makes it easier to use, as you don't need to take care of cancelling them yourselve. 
 
 To show a Dialog, use **AsyncShowDialog** or **AsyncShowDialogModal**. This allows
 to use 'await' to wait until the dialog completes. Don't use dlg.ShowModal() directly as it would block the event loop.
@@ -53,7 +53,6 @@ Below is full example with AsyncBind, WxAsyncApp, and StartCoroutine:
 import wx
 from wxasync import AsyncBind, WxAsyncApp, StartCoroutine
 import asyncio
-from asyncio.events import get_event_loop
 import time
 
 
