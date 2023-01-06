@@ -19,6 +19,7 @@ class WxAsyncApp(wx.App):
         self.BoundObjects = {}
         self.RunningTasks = defaultdict(set)
         self.exiting = False
+        self.ui_idle = True
         self.warn_on_cancel_callback = warn_on_cancel_callback
         super(WxAsyncApp, self).__init__(**kwargs)
         self.SetExitOnFrameDelete(True)
@@ -31,13 +32,17 @@ class WxAsyncApp(wx.App):
                 if IS_MAC:
                     # evtloop.Pending() just returns True on MacOs
                     evtloop.DispatchTimeout(0)
+                    self.ui_idle = False
                 else:
                     while evtloop.Pending():
                         evtloop.Dispatch()
                         await asyncio.sleep(0)
+                        self.ui_idle = False
                 await asyncio.sleep(0.005)
                 self.ProcessPendingEvents()
-                evtloop.ProcessIdle()
+                if not self.ui_idle:
+                    evtloop.ProcessIdle()
+                    self.ui_idle = True
             self.exiting = False
 
     def ExitMainLoop(self):
