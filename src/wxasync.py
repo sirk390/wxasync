@@ -15,11 +15,12 @@ from wx._adv import PropertySheetDialog
 IS_MAC = platform.system() == "Darwin"
 
 class WxAsyncApp(wx.App):
-    def __init__(self, warn_on_cancel_callback=False, **kwargs):
+    def __init__(self, warn_on_cancel_callback=False, sleep_duration=0.005, **kwargs):
         self.BoundObjects = {}
         self.RunningTasks = defaultdict(set)
         self.exiting = False
         self.ui_idle = True
+        self.sleep_duration = sleep_duration
         self.warn_on_cancel_callback = warn_on_cancel_callback
         super(WxAsyncApp, self).__init__(**kwargs)
         self.SetExitOnFrameDelete(True)
@@ -38,7 +39,7 @@ class WxAsyncApp(wx.App):
                         evtloop.Dispatch()
                         await asyncio.sleep(0)
                         self.ui_idle = False
-                await asyncio.sleep(0.005)
+                await asyncio.sleep(self.sleep_duration)
                 self.ProcessPendingEvents()
                 if not self.ui_idle:
                     evtloop.ProcessIdle()
