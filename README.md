@@ -2,8 +2,8 @@
 ## asyncio support for wxpython
 
 wxasync it a library for using python 3 asyncio (async/await) with wxpython.
- It does GUI message polling every 5ms and runs the asyncio message loop the rest of the time. 
- The polling doesn't have a noticable effect on CPU usage (still 0% when idle). 
+ The library polls UI messages every 20ms and runs the asyncio message loop the rest of the time. 
+ When idle, the CPU usage is 0% on windows and about 1-2% on MacOS. 
 
 ### Installation
 wxasync requires python 3.7. For earlier versions of python use wxasync 0.45.

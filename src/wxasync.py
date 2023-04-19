@@ -15,7 +15,7 @@ from wx._adv import PropertySheetDialog
 IS_MAC = platform.system() == "Darwin"
 
 class WxAsyncApp(wx.App):
-    def __init__(self, warn_on_cancel_callback=False, sleep_duration=0.005, **kwargs):
+    def __init__(self, warn_on_cancel_callback=False, sleep_duration=0.02, **kwargs):
         self.BoundObjects = {}
         self.RunningTasks = defaultdict(set)
         self.exiting = False
