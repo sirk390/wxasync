@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='wxasync',
-      version='0.48',
+      version='0.49',
       description='asyncio for wxpython',
       long_description='wxasync it a library for using python 3 asyncio (async/await) with wxpython.',
       url='http://github.com/sirk390/wxasync',
