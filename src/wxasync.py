@@ -1,6 +1,7 @@
 from asyncio.events import get_event_loop
 import asyncio
 import wx
+import wx.html
 import warnings
 from asyncio import CancelledError
 from collections import defaultdict
@@ -8,8 +9,6 @@ import platform
 from asyncio.locks import Event
 from asyncio.coroutines import iscoroutinefunction
 import asyncio
-from wx._html import HtmlHelpDialog
-from wx._adv import PropertySheetDialog
 
 
 IS_MAC = platform.system() == "Darwin"
@@ -162,7 +161,7 @@ async def AsyncShowDialog(dlg):
 
 
 async def AsyncShowDialogModal(dlg):
-    if type(dlg) in [HtmlHelpDialog, wx.FileDialog, wx.DirDialog, wx.FontDialog, wx.ColourDialog, wx.MessageDialog]:
+    if type(dlg) in [wx.html.HtmlHelpDialog, wx.FileDialog, wx.DirDialog, wx.FontDialog, wx.ColourDialog, wx.MessageDialog]:
         return await ShowModalInExecutor(dlg)
     else:
         frames = set(wx.GetTopLevelWindows()) - set([dlg])
