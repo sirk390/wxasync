@@ -44,6 +44,7 @@ class WxAsyncApp(wx.App):
                     evtloop.ProcessIdle()
                     self.ui_idle = True
             self.exiting = False
+        self.OnExit()
 
     def ExitMainLoop(self):
         self.exiting = True
